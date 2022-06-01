@@ -46,28 +46,20 @@ export const getUserData = async (req, res, next) => {
 // =======================================================
 
 export const postAlbum = async (req, res, next) => {
-    const { band, albumTitle, albumYear } = req.body;
-
-    const newAlbum = {
-        band: band,
-        albumTitle: albumTitle,
-        albumYear: albumYear
-    }
-
     // Take the user's id from the "id" parameter of their request URL
     const userId = req.params.id;
+    // Take the new album object from the body of the request
+    const newAlbum = req.body;
 
-    // * Task 5, Step 1: Find the user document
+    // * Task 5, Step 1: Find the document representing the logged-in user
     const foundUser = await User.findById(userId);
 
     // * Task 5, Step 2: Check to see if the user already has the new album in their "albums" array
     const foundAlbum = foundUser.albums.find(album => {
-        return album.band.toLowerCase() === band.toLowerCase() 
-            && album.albumTitle.toLowerCase() === albumTitle.toLowerCase() 
-            && album.albumYear == albumYear
+        return album.band.toLowerCase() === newAlbum.band.toLowerCase() 
+            && album.albumTitle.toLowerCase() === newAlbum.albumTitle.toLowerCase() 
+            && album.albumYear == newAlbum.albumYear
     });
-
-    console.log("!", foundAlbum)
 
     // * Task 5, Step 3: If the user does not already have the new album in their "albums" array...
     // * ... use findByIdAndUpdate to try to update the user's "albums" array with the new album.
@@ -76,6 +68,7 @@ export const postAlbum = async (req, res, next) => {
         let updatedUser;
         
         try {
+            //                                        (1) id   (2) update                      (3) options
             updatedUser = await User.findByIdAndUpdate(userId, { $push: { albums: newAlbum }}, { new: true, runValidators: true})
         } catch {
             return next(createError(500, "User could not be updated. Please try again"));
