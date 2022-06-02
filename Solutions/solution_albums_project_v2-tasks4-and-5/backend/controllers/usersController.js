@@ -52,7 +52,13 @@ export const postAlbum = async (req, res, next) => {
     const newAlbum = req.body;
 
     // * Task 5, Step 1: Find the document representing the logged-in user
-    const foundUser = await User.findById(userId);
+    let foundUser; 
+    
+    try {
+        foundUser = await User.findById(userId);
+    } catch {
+        return next(createError(500, "Query could not be completed. Please try again"));
+    }
 
     // * Task 5, Step 2: Check to see if the user already has the new album in their "albums" array
     const foundAlbum = foundUser.albums.find(album => {
